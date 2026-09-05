@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Flappy Bird</title>
+<link rel="icon" href="favicon.ico">
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #1a1a1a;
+    overflow: hidden;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  canvas {
+    image-rendering: pixelated;
+    display: block;
+    box-shadow: 0 0 40px rgba(0, 0, 0, .6);
+    cursor: pointer;
+  }
+  #loading {
+    position: absolute;
+    color: #666;
+    font: 14px system-ui, sans-serif;
+  }
+</style>
+</head>
+<body>
+  <div id="loading">Loading&hellip;</div>
+  <canvas id="game" width="288" height="512" hidden></canvas>
+  <script src="game.js"></script>
+</body>
+</html>
