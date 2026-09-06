@@ -20,12 +20,22 @@ the audio over `file://`, so a local server is the better bet.
 | Path | What's in it |
 | --- | --- |
 | `index.html`, `game.js` | The game |
-| `sprites/` | Birds in three colours, green and red pipes, day and night backgrounds, ground, score digits, title and game over art |
+| `sprites/` | Birds in three colours, a Goku sprite, green and red pipes, day and night backgrounds, ground, score digits, title and game over art |
 | `audio/` | Wing, point, hit, die and swoosh, as both WAV and OGG |
 | `favicon.ico`, `screenshot.png` | Page icon and a preview image |
 
-The game picks a bird colour at random each round, and switches to the night
-background with red pipes about a third of the time.
+## Characters
+
+The ready screen has a character picker. Tap a tile, or use the left and right
+arrow keys, to fly as one of the three birds or as Goku. The first tile is
+"surprise me", which rolls a random character each round. Your choice is
+remembered between sessions.
+
+The Goku sprite is original pixel art drawn for this project in the same
+17x12 at 2x style as the birds. Goku himself is a Dragon Ball character owned
+by his rights holders, so he belongs here as fan art, not as licensed content.
+
+The night background with red pipes still comes up about a third of the time.
 
 ## Credits
 

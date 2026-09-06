@@ -28,6 +28,7 @@
     'yellowbird-downflap','yellowbird-midflap','yellowbird-upflap',
     'redbird-downflap','redbird-midflap','redbird-upflap',
     'bluebird-downflap','bluebird-midflap','bluebird-upflap',
+    'goku-downflap','goku-midflap','goku-upflap',
   ];
   const SOUNDS = ['wing', 'point', 'hit', 'die', 'swoosh'];
 
@@ -66,16 +67,37 @@
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
+  // Everything you can fly as, plus a "surprise me" tile at the front.
+  const PLAYABLE = ['yellowbird', 'redbird', 'bluebird', 'goku'];
+  const TILES = ['random'].concat(PLAYABLE);
+
   let state = READY;
   let bird, pipes, score, best, groundX, frame, flash, bgName, pipeName, birdName;
+  let picked;
 
   best = Number(localStorage.getItem('flappyBest') || 0);
+  try { picked = localStorage.getItem('flappyChar') || 'random'; } catch (e) { picked = 'random'; }
+  if (TILES.indexOf(picked) === -1) picked = 'random';
+
+  function applyPick() {
+    birdName = picked === 'random'
+      ? PLAYABLE[Math.floor(Math.random() * PLAYABLE.length)]
+      : picked;
+  }
+
+  function choose(id) {
+    if (id === picked && id !== 'random') return;
+    picked = id;
+    try { localStorage.setItem('flappyChar', id); } catch (e) {}
+    applyPick();
+    play('swoosh');
+  }
 
   function reset() {
     const night = Math.random() < 0.35;
     bgName   = night ? 'background-night' : 'background-day';
     pipeName = night ? 'pipe-red' : 'pipe-green';
-    birdName = ['yellowbird', 'redbird', 'bluebird'][Math.floor(Math.random() * 3)];
+    applyPick();
 
     bird = { y: H / 2 - 60, vel: 0, rot: 0, wing: 0 };
     pipes = [];
@@ -210,6 +232,44 @@
     ctx.fillText(text, x, y);
   }
 
+  // ------------------------------------------------------------ character UI
+  const TILE_W = 38, TILE_H = 32, TILE_GAP = 6, TILE_Y = 336;
+  const TILE_X0 = (W - (TILES.length * TILE_W + (TILES.length - 1) * TILE_GAP)) / 2;
+
+  function tileRect(i) {
+    return { x: TILE_X0 + i * (TILE_W + TILE_GAP), y: TILE_Y, w: TILE_W, h: TILE_H };
+  }
+
+  function drawPicker() {
+    outlinedText('PICK YOUR FLYER', W / 2, 330);
+    for (let i = 0; i < TILES.length; i++) {
+      const id = TILES[i], r = tileRect(i), on = id === picked;
+      // Solid tiles, so dark sprites stay readable over the night background.
+      ctx.fillStyle = on ? '#ded895' : '#8f8f86';
+      ctx.fillRect(r.x, r.y, r.w, r.h);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = on ? '#ffffff' : '#54544c';
+      ctx.strokeRect(r.x + 1, r.y + 1, r.w - 2, r.h - 2);
+      if (id === 'random') {
+        ctx.font = 'bold 20px "Courier New", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = on ? '#7a5c34' : '#54544c';
+        ctx.fillText('?', r.x + r.w / 2, r.y + r.h / 2 + 7);
+      } else {
+        ctx.drawImage(img[id + '-midflap'], r.x + 2, r.y + 4);
+      }
+    }
+  }
+
+  // Which tile, if any, is under a tap. Returns -1 for a miss.
+  function tileAt(pt) {
+    for (let i = 0; i < TILES.length; i++) {
+      const r = tileRect(i);
+      if (pt.x >= r.x && pt.x <= r.x + r.w && pt.y >= r.y && pt.y <= r.y + r.h) return i;
+    }
+    return -1;
+  }
+
   function drawPipe(p) {
     const pipe = img[pipeName];
     // Top pipe: same sprite mirrored vertically, hanging above the gap.
@@ -239,6 +299,7 @@
 
     if (state === READY) {
       ctx.drawImage(img.message, (W - 184) / 2, 50);
+      drawPicker();
     } else if (state !== OVER) {
       drawDigits(String(score), W / 2, 50);
     }
@@ -278,10 +339,20 @@
   }
 
   // -------------------------------------------------------------------- input
-  function press(e) {
-    if (e) e.preventDefault();
+  // pt is the tap position in logical canvas units, or null for the keyboard.
+  function activate(pt) {
+    if (state === READY && pt) {
+      const i = tileAt(pt);
+      if (i !== -1) { choose(TILES[i]); return; }
+    }
     if (state === PLAYING || state === READY) flap();
     else if (state === OVER) reset();
+  }
+
+  function pointerPos(e) {
+    const r = canvas.getBoundingClientRect();
+    const p = e.touches && e.touches.length ? e.touches[0] : e;
+    return { x: (p.clientX - r.left) * (W / r.width), y: (p.clientY - r.top) * (H / r.height) };
   }
 
   // Coming back to a backgrounded tab must not fast-forward the physics and
@@ -290,10 +361,26 @@
     if (!document.hidden) { last = 0; acc = 0; }
   });
 
-  canvas.addEventListener('mousedown', press);
-  canvas.addEventListener('touchstart', press, { passive: false });
+  canvas.addEventListener('mousedown', (e) => { e.preventDefault(); activate(pointerPos(e)); });
+  canvas.addEventListener('touchstart', (e) => { e.preventDefault(); activate(pointerPos(e)); },
+                          { passive: false });
+
   window.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') press(e);
+    // Left and right browse the roster while you are still on the ready screen.
+    if (state === READY && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
+      e.preventDefault();
+      const step = e.code === 'ArrowLeft' ? -1 : 1;
+      const next = (TILES.indexOf(picked) + step + TILES.length) % TILES.length;
+      picked = TILES[next];
+      try { localStorage.setItem('flappyChar', picked); } catch (err) {}
+      applyPick();
+      play('swoosh');
+      return;
+    }
+    if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+      e.preventDefault();
+      activate(null);
+    }
   });
 
   // ------------------------------------------------------------------- sizing
