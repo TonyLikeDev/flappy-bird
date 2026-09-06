@@ -28,7 +28,7 @@
     'yellowbird-downflap','yellowbird-midflap','yellowbird-upflap',
     'redbird-downflap','redbird-midflap','redbird-upflap',
     'bluebird-downflap','bluebird-midflap','bluebird-upflap',
-    'goku-downflap','goku-midflap','goku-upflap',
+    'songoku','songoku2','songoku3',
   ];
   const SOUNDS = ['wing', 'point', 'hit', 'die', 'swoosh'];
 
@@ -67,8 +67,18 @@
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
+  // Animation frames per character. The birds follow a naming convention;
+  // the Goku art arrived as its own set of files, so map them explicitly.
+  const CHARS = {
+    yellowbird: ['yellowbird-downflap', 'yellowbird-midflap', 'yellowbird-upflap'],
+    redbird:    ['redbird-downflap', 'redbird-midflap', 'redbird-upflap'],
+    bluebird:   ['bluebird-downflap', 'bluebird-midflap', 'bluebird-upflap'],
+    goku:       ['songoku', 'songoku2', 'songoku3'],
+  };
+  const WING_CYCLE = [0, 1, 2, 1];
+
   // Everything you can fly as, plus a "surprise me" tile at the front.
-  const PLAYABLE = ['yellowbird', 'redbird', 'bluebird', 'goku'];
+  const PLAYABLE = Object.keys(CHARS);
   const TILES = ['random'].concat(PLAYABLE);
 
   let state = READY;
@@ -256,7 +266,8 @@
         ctx.fillStyle = on ? '#7a5c34' : '#54544c';
         ctx.fillText('?', r.x + r.w / 2, r.y + r.h / 2 + 7);
       } else {
-        ctx.drawImage(img[id + '-midflap'], r.x + 2, r.y + 4);
+        const sp = img[CHARS[id][1]];
+        ctx.drawImage(sp, r.x + (TILE_W - sp.width) / 2, r.y + (TILE_H - sp.height) / 2);
       }
     }
   }
@@ -288,13 +299,12 @@
 
     ctx.drawImage(img.base, Math.round(-groundX), GROUND_Y);
 
-    // Bird
-    const frames = ['downflap', 'midflap', 'upflap', 'midflap'];
-    const sprite = img[birdName + '-' + frames[bird.wing]];
+    // Player, drawn centred on the hitbox so characters of any size line up.
+    const sprite = img[CHARS[birdName][WING_CYCLE[bird.wing]]];
     ctx.save();
     ctx.translate(BIRD_X + 17, Math.round(bird.y) + 12);
     ctx.rotate((bird.rot * Math.PI) / 180);
-    ctx.drawImage(sprite, -17, -12);
+    ctx.drawImage(sprite, -sprite.width / 2, -sprite.height / 2);
     ctx.restore();
 
     if (state === READY) {

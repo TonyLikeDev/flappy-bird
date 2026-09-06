@@ -31,9 +31,11 @@ arrow keys, to fly as one of the three birds or as Goku. The first tile is
 "surprise me", which rolls a random character each round. Your choice is
 remembered between sessions.
 
-The Goku sprite is original pixel art drawn for this project in the same
-17x12 at 2x style as the birds. Goku himself is a Dragon Ball character owned
-by his rights holders, so he belongs here as fan art, not as licensed content.
+Goku uses three 32x32 frames stored as `songoku.png`, `songoku2.png` and
+`songoku3.png`. He is drawn centred on the same hitbox the birds use, so
+characters of different sizes all collide identically. Goku is a Dragon Ball
+character owned by his rights holders, so he belongs here as fan art rather
+than as licensed content.
 
 The night background with red pipes still comes up about a third of the time.
 
