@@ -28,6 +28,7 @@
     'yellowbird-downflap','yellowbird-midflap','yellowbird-upflap',
     'redbird-downflap','redbird-midflap','redbird-upflap',
     'bluebird-downflap','bluebird-midflap','bluebird-upflap',
+    'goku-downflap','goku-midflap','goku-upflap',
     'songoku','songoku2','songoku3',
   ];
   const SOUNDS = ['wing', 'point', 'hit', 'die', 'swoosh'];
@@ -73,7 +74,8 @@
     yellowbird: ['yellowbird-downflap', 'yellowbird-midflap', 'yellowbird-upflap'],
     redbird:    ['redbird-downflap', 'redbird-midflap', 'redbird-upflap'],
     bluebird:   ['bluebird-downflap', 'bluebird-midflap', 'bluebird-upflap'],
-    goku:       ['songoku', 'songoku2', 'songoku3'],
+    goku:       ['goku-downflap', 'goku-midflap', 'goku-upflap'],
+    nimbus:     ['songoku', 'songoku2', 'songoku3'],
   };
   const WING_CYCLE = [0, 1, 2, 1];
 
@@ -86,8 +88,22 @@
   let picked;
 
   best = Number(localStorage.getItem('flappyBest') || 0);
-  try { picked = localStorage.getItem('flappyChar') || 'random'; } catch (e) { picked = 'random'; }
+
+  // 'goku' used to mean the Nimbus art, before a second Goku joined the
+  // roster. Read the old key once, then everything writes the new one.
+  const LEGACY_NAMES = { goku: 'nimbus' };
+  try {
+    picked = localStorage.getItem('flappyChar2');
+    if (!picked) {
+      const old = localStorage.getItem('flappyChar');
+      picked = old ? (LEGACY_NAMES[old] || old) : 'random';
+    }
+  } catch (e) { picked = 'random'; }
   if (TILES.indexOf(picked) === -1) picked = 'random';
+
+  function savePick(id) {
+    try { localStorage.setItem('flappyChar2', id); } catch (e) {}
+  }
 
   function applyPick() {
     birdName = picked === 'random'
@@ -98,7 +114,7 @@
   function choose(id) {
     if (id === picked && id !== 'random') return;
     picked = id;
-    try { localStorage.setItem('flappyChar', id); } catch (e) {}
+    savePick(id);
     applyPick();
     play('swoosh');
   }
@@ -243,7 +259,7 @@
   }
 
   // ------------------------------------------------------------ character UI
-  const TILE_W = 38, TILE_H = 32, TILE_GAP = 6, TILE_Y = 336;
+  const TILE_W = 38, TILE_H = 32, TILE_GAP = 4, TILE_Y = 336;
   const TILE_X0 = (W - (TILES.length * TILE_W + (TILES.length - 1) * TILE_GAP)) / 2;
 
   function tileRect(i) {
@@ -382,7 +398,7 @@
       const step = e.code === 'ArrowLeft' ? -1 : 1;
       const next = (TILES.indexOf(picked) + step + TILES.length) % TILES.length;
       picked = TILES[next];
-      try { localStorage.setItem('flappyChar', picked); } catch (err) {}
+      savePick(picked);
       applyPick();
       play('swoosh');
       return;

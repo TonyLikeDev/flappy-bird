@@ -27,15 +27,18 @@ the audio over `file://`, so a local server is the better bet.
 ## Characters
 
 The ready screen has a character picker. Tap a tile, or use the left and right
-arrow keys, to fly as one of the three birds or as Goku. The first tile is
+arrow keys, to fly as one of the three birds or as either Goku. The first tile is
 "surprise me", which rolls a random character each round. Your choice is
 remembered between sessions.
 
-Goku uses three 32x32 frames stored as `songoku.png`, `songoku2.png` and
-`songoku3.png`. He is drawn centred on the same hitbox the birds use, so
-characters of different sizes all collide identically. Goku is a Dragon Ball
-character owned by his rights holders, so he belongs here as fan art rather
-than as licensed content.
+There are two Gokus. One flies on the Flying Nimbus, from the 32x32 frames
+`songoku.png`, `songoku2.png` and `songoku3.png`. The other flies under his
+own power, from the 34x24 frames `goku-downflap.png`, `goku-midflap.png` and
+`goku-upflap.png`, drawn in the birds' own 17x12 at 2x style.
+
+Every character is drawn centred on the same hitbox, so sprites of different
+sizes all collide identically. Goku is a Dragon Ball character owned by his
+rights holders, so he belongs here as fan art rather than licensed content.
 
 The night background with red pipes still comes up about a third of the time.
 
