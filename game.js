@@ -30,6 +30,7 @@
     'bluebird-downflap','bluebird-midflap','bluebird-upflap',
     'goku-downflap','goku-midflap','goku-upflap',
     'songoku','songoku2','songoku3',
+    'doraemon-downflap','doraemon-midflap','doraemon-upflap',
   ];
   const SOUNDS = ['wing', 'point', 'hit', 'die', 'swoosh'];
 
@@ -76,6 +77,7 @@
     bluebird:   ['bluebird-downflap', 'bluebird-midflap', 'bluebird-upflap'],
     goku:       ['goku-downflap', 'goku-midflap', 'goku-upflap'],
     nimbus:     ['songoku', 'songoku2', 'songoku3'],
+    doraemon:   ['doraemon-downflap', 'doraemon-midflap', 'doraemon-upflap'],
   };
   const WING_CYCLE = [0, 1, 2, 1];
 
@@ -259,8 +261,10 @@
   }
 
   // ------------------------------------------------------------ character UI
-  const TILE_W = 38, TILE_H = 32, TILE_GAP = 4, TILE_Y = 336;
-  const TILE_X0 = (W - (TILES.length * TILE_W + (TILES.length - 1) * TILE_GAP)) / 2;
+  const TILE_H = 32, TILE_GAP = 4, TILE_Y = 336;
+  // Tiles shrink as the roster grows, so the row never runs off the canvas.
+  const TILE_W = Math.min(38, Math.floor((W - 12 - (TILES.length - 1) * TILE_GAP) / TILES.length));
+  const TILE_X0 = Math.round((W - (TILES.length * TILE_W + (TILES.length - 1) * TILE_GAP)) / 2);
 
   function tileRect(i) {
     return { x: TILE_X0 + i * (TILE_W + TILE_GAP), y: TILE_Y, w: TILE_W, h: TILE_H };
@@ -283,7 +287,8 @@
         ctx.fillText('?', r.x + r.w / 2, r.y + r.h / 2 + 7);
       } else {
         const sp = img[CHARS[id][1]];
-        ctx.drawImage(sp, r.x + (TILE_W - sp.width) / 2, r.y + (TILE_H - sp.height) / 2);
+        ctx.drawImage(sp, Math.round(r.x + (TILE_W - sp.width) / 2),
+                          Math.round(r.y + (TILE_H - sp.height) / 2));
       }
     }
   }
